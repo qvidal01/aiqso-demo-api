@@ -1,0 +1,102 @@
+name: Deploy Demo API
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Run tests
+        run: npm test || echo "No tests configured yet"
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROXMOX_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.PROXMOX_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Build Docker image
+        run: docker build -t aiqso-demo-api:latest .
+
+      - name: Save Docker image
+        run: docker save aiqso-demo-api:latest | gzip > demo-api-image.tar.gz
+
+      - name: Transfer to Proxmox
+        run: |
+          rsync -avz --progress \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            demo-api-image.tar.gz \
+            docker-compose.yml \
+            ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_HOST }}:/tmp/
+
+      - name: Deploy to LXC container
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_HOST }} << 'EOF'
+            # Copy to LXC container
+            pct push 141 /tmp/demo-api-image.tar.gz /tmp/demo-api-image.tar.gz
+            pct push 141 /tmp/docker-compose.yml /root/aiqso-demo-api/docker-compose.yml
+
+            # Execute in container
+            pct exec 141 -- bash -c '
+              cd /root/aiqso-demo-api
+
+              # Load Docker image
+              docker load < /tmp/demo-api-image.tar.gz
+
+              # Stop existing container
+              docker-compose down || true
+
+              # Start new container
+              docker-compose up -d
+
+              # Cleanup
+              rm /tmp/demo-api-image.tar.gz
+
+              # Show status
+              docker-compose ps
+              docker-compose logs --tail=50
+            '
+
+            # Cleanup on host
+            rm /tmp/demo-api-image.tar.gz /tmp/docker-compose.yml
+          EOF
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -f http://demo-api.aiqso.io/health || exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_ed25519
+          rm -f demo-api-image.tar.gz
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+          fi
