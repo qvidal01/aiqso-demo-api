@@ -8,7 +8,7 @@ set -e
 LXC_ID=142
 LXC_NAME="aiqso-demo-api"
 LXC_HOSTNAME="demo-api"
-LXC_STORAGE="local-lvm"
+LXC_STORAGE="local-zfs"
 LXC_TEMPLATE="local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
 LXC_CORES=2
 LXC_MEMORY=2048
