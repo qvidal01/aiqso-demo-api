@@ -10,10 +10,10 @@ const configSchema = z.object({
   API_URL: z.string().url(),
   ALLOWED_ORIGINS: z.string(),
 
-  // Firebase
-  FIREBASE_PROJECT_ID: z.string().min(1),
-  FIREBASE_CLIENT_EMAIL: z.string().email(),
-  FIREBASE_PRIVATE_KEY: z.string().min(1),
+  // Firebase (Optional - only needed for user authentication)
+  FIREBASE_PROJECT_ID: z.string().min(1).optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().email().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().min(1).optional(),
 
   // Supabase
   SUPABASE_URL: z.string().url(),
@@ -73,11 +73,11 @@ export const getConfig = () => ({
     apiUrl: config.API_URL,
     allowedOrigins: config.ALLOWED_ORIGINS.split(','),
   },
-  firebase: {
+  firebase: config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL && config.FIREBASE_PRIVATE_KEY ? {
     projectId: config.FIREBASE_PROJECT_ID,
     clientEmail: config.FIREBASE_CLIENT_EMAIL,
     privateKey: config.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  },
+  } : null,
   supabase: {
     url: config.SUPABASE_URL,
     anonKey: config.SUPABASE_ANON_KEY,

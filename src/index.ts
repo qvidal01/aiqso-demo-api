@@ -18,14 +18,19 @@ import calendarRoutes from './routes/calendar.js';
 
 const config = getConfig();
 
-// Initialize Firebase Admin
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: config.firebase.projectId,
-    clientEmail: config.firebase.clientEmail,
-    privateKey: config.firebase.privateKey,
-  }),
-});
+// Initialize Firebase Admin (optional - only if credentials provided)
+if (config.firebase) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: config.firebase.projectId,
+      clientEmail: config.firebase.clientEmail,
+      privateKey: config.firebase.privateKey,
+    }),
+  });
+  logger.info('✅ Firebase initialized');
+} else {
+  logger.warn('⚠️  Firebase not configured - authentication disabled (demo will work without user accounts)');
+}
 
 // Create Fastify instance
 const fastify = Fastify({

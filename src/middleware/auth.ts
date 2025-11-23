@@ -14,6 +14,12 @@ export const optionalAuth = async (
   reply: FastifyReply
 ) => {
   try {
+    // Check if Firebase is initialized
+    if (admin.apps.length === 0) {
+      // Firebase not configured, continue as guest
+      return;
+    }
+
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -44,6 +50,14 @@ export const requireAuth = async (
   reply: FastifyReply
 ) => {
   try {
+    // Check if Firebase is initialized
+    if (admin.apps.length === 0) {
+      return reply.status(503).send({
+        success: false,
+        error: 'Authentication not configured on this server',
+      });
+    }
+
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
