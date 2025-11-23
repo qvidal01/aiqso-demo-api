@@ -5,7 +5,7 @@
 
 set -e
 
-LXC_ID=141
+LXC_ID=142
 LXC_NAME="aiqso-demo-api"
 LXC_HOSTNAME="demo-api"
 LXC_STORAGE="local-lvm"
