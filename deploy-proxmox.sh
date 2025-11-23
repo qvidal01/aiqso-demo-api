@@ -13,7 +13,7 @@ LXC_TEMPLATE="local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
 LXC_CORES=2
 LXC_MEMORY=2048
 LXC_SWAP=512
-LXC_DISK_SIZE=8G
+LXC_DISK_SIZE=8
 
 echo "🚀 Creating Proxmox LXC ${LXC_ID} for AIQSO Demo API..."
 
