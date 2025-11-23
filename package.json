@@ -1,6 +1,7 @@
 {
   "name": "aiqso-demo-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "AIQSO Interactive Demo Portal API - Backend services for automation demonstrations",
   "main": "dist/index.js",
   "scripts": {
