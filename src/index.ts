@@ -15,6 +15,7 @@ import chatRoutes from './routes/chat.js';
 import dashboardRoutes from './routes/dashboard.js';
 import sessionRoutes from './routes/session.js';
 import calendarRoutes from './routes/calendar.js';
+import trackingRoutes from './routes/tracking.js';
 
 const config = getConfig();
 
@@ -80,6 +81,9 @@ fastify.get('/', async (request, reply) => {
       dashboard: 'GET /api/dashboard/metrics, GET /api/dashboard/charts',
       session: 'POST|GET /api/session',
       calendar: 'GET /api/calendar/auth-url, GET /api/calendar/callback',
+      tracking: 'POST /api/track, POST /api/feedback, GET /api/feedback',
+      newsletter: 'POST /api/newsletter, GET /api/newsletter/subscribers',
+      analytics: 'GET /api/analytics/summary',
     },
     documentation: 'https://aiqso.io/docs/api',
   };
@@ -92,6 +96,7 @@ await fastify.register(chatRoutes, { prefix: '/api' });
 await fastify.register(dashboardRoutes, { prefix: '/api' });
 await fastify.register(sessionRoutes, { prefix: '/api' });
 await fastify.register(calendarRoutes, { prefix: '/api' });
+await fastify.register(trackingRoutes, { prefix: '/api' });
 
 // Error handler
 fastify.setErrorHandler((error, request, reply) => {

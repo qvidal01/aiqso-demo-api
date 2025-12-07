@@ -57,7 +57,7 @@ export default async function automationRoutes(fastify: FastifyInstance) {
         });
       }
       // SMS - Simulation
-      else if (data.deliveryMethod === 'sms' || (data.deliveryMethod === 'sms' && data.simulate)) {
+      else if (data.deliveryMethod === 'sms') {
         result = simulateSMS(data.recipient, data.payload.message || '');
       }
       // Phone Call - Simulation
